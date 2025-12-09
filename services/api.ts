@@ -237,7 +237,12 @@ export const ApiService = {
 async function runOrchestrator(jobId: string, payload: QueryPayload) {
   if (!currentJob) return;
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const apiKey = payload.apiKey; // API key is required from user input
+  if (!apiKey) {
+    throw new Error('API key is required');
+  }
+
+  const ai = new GoogleGenAI({ apiKey: apiKey });
   const modelSearch = 'gemini-2.5-flash';
   const modelReasoning = 'gemini-2.5-flash'; 
 

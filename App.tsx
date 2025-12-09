@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Play, Upload, FileType, Download, Copy, 
   BrainCircuit, TrendingUp, Activity, Globe, FileText, FlaskConical, Container,
   CheckCircle2, Clock, Loader2, XCircle, Info, ExternalLink, ShieldCheck, Sparkles,
-  ChevronLeft, Moon, Sun, Monitor, Building2, Users, FileBadge, Lightbulb
+  ChevronLeft, Moon, Sun, Monitor, Building2, Users, FileBadge, Lightbulb, AlertCircle
 } from 'lucide-react';
 
 export default function App() {
@@ -26,6 +26,10 @@ export default function App() {
   const [finalResult, setFinalResult] = useState<StructuredResult | null>(null);
   const [activeTab, setActiveTab] = useState('Market');
   const [activeLogTab, setActiveLogTab] = useState<'Agents' | 'System'>('Agents');
+  
+  // API Key modal
+  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
+  const [inputApiKey, setInputApiKey] = useState('');
 
   // --- Logic ---
 
@@ -68,15 +72,25 @@ export default function App() {
     }
   };
 
-  const handleRunOrchestration = async () => {
+  const handleRunOrchestration = () => {
+    // Always show API key input modal
+    setShowApiKeyInput(true);
+  };
+  
+  const handleStartWithApiKey = async () => {
+    if (!inputApiKey.trim()) return;
+    
+    setShowApiKeyInput(false);
     setFinalResult(null);
     setJobStatus(null);
+    
     try {
       const { job_id } = await ApiService.startQuery({
         query,
         region,
         molecule: molecule || undefined,
-        generate_pdf: generatePdf
+        generate_pdf: generatePdf,
+        apiKey: inputApiKey
       });
       setCurrentJobId(job_id);
     } catch (err) {
@@ -592,6 +606,68 @@ export default function App() {
           </div>
         </section>
       </main>
+
+      {/* API Key Input Modal */}
+      {showApiKeyInput && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                <AlertCircle className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Enter Gemini API Key
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  API key is required to start orchestration
+                </p>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                API Key
+              </label>
+              <input
+                type="password"
+                value={inputApiKey}
+                onChange={(e) => setInputApiKey(e.target.value)}
+                placeholder="Enter your Gemini API key"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                  bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 
+                  focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && inputApiKey.trim()) {
+                    handleStartWithApiKey();
+                  }
+                }}
+              />
+            </div>
+
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowApiKeyInput(false);
+                  setInputApiKey('');
+                }}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 
+                  dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleStartWithApiKey}
+                disabled={!inputApiKey.trim()}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+                  disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              >
+                Start Orchestration
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
