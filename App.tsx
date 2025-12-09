@@ -9,7 +9,7 @@ import {
   LayoutDashboard, Play, Upload, FileType, Download, Copy, 
   BrainCircuit, TrendingUp, Activity, Globe, FileText, FlaskConical, Container,
   CheckCircle2, Clock, Loader2, XCircle, Info, ExternalLink, ShieldCheck, Sparkles,
-  ChevronLeft, Moon, Sun, Monitor, Building2, Users, FileBadge, Lightbulb, AlertCircle
+  ChevronLeft, Moon, Sun, Monitor, Building2, Users, FileBadge, Lightbulb
 } from 'lucide-react';
 
 export default function App() {
@@ -26,11 +26,6 @@ export default function App() {
   const [finalResult, setFinalResult] = useState<StructuredResult | null>(null);
   const [activeTab, setActiveTab] = useState('Market');
   const [activeLogTab, setActiveLogTab] = useState<'Agents' | 'System'>('Agents');
-  
-  // API Key override for quota limits
-  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
-  const [customApiKey, setCustomApiKey] = useState('');
-  const [tempApiKey, setTempApiKey] = useState('');
 
   // --- Logic ---
 
@@ -51,14 +46,6 @@ export default function App() {
         try {
           const status = await ApiService.getStatus(currentJobId);
           setJobStatus(status);
-          
-          // Check for quota error
-          if (status.quotaError) {
-            clearInterval(pollInterval);
-            setShowApiKeyModal(true);
-            return;
-          }
-          
           if (status.isComplete) {
             clearInterval(pollInterval);
             fetchResult(currentJobId);
@@ -89,21 +76,12 @@ export default function App() {
         query,
         region,
         molecule: molecule || undefined,
-        generate_pdf: generatePdf,
-        apiKey: customApiKey || undefined
+        generate_pdf: generatePdf
       });
       setCurrentJobId(job_id);
     } catch (err) {
       console.error("Failed to start query", err);
     }
-  };
-  
-  const handleRetryWithNewKey = () => {
-    setCustomApiKey(tempApiKey);
-    setShowApiKeyModal(false);
-    setTempApiKey('');
-    // Restart the orchestration with the new key
-    handleRunOrchestration();
   };
 
   const isProcessing = !!currentJobId && jobStatus && !jobStatus.isComplete;
@@ -614,67 +592,6 @@ export default function App() {
           </div>
         </section>
       </main>
-      
-      {/* API Key Modal for Quota Limit */}
-      {showApiKeyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className={`w-full max-w-md mx-4 rounded-2xl shadow-2xl p-6 animate-in zoom-in-95 duration-200 ${darkMode ? 'bg-slate-900 border border-slate-800' : 'bg-white border border-slate-200'}`}>
-            <div className="flex items-start gap-3 mb-4">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-              </div>
-              <div className="flex-1">
-                <h3 className={`text-lg font-bold mb-1 ${darkMode ? 'text-slate-100' : 'text-slate-900'}`}>
-                  Quota Limit Reached
-                </h3>
-                <p className={`text-sm ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                  Your Gemini API quota has been exceeded. Please enter a new API key to continue.
-                </p>
-              </div>
-            </div>
-            
-            <div className="mb-4">
-              <label className={`block text-xs font-semibold mb-2 ${darkMode ? 'text-slate-400' : 'text-slate-600'}`}>
-                Gemini API Key
-              </label>
-              <input
-                type="password"
-                value={tempApiKey}
-                onChange={(e) => setTempApiKey(e.target.value)}
-                placeholder="AIza..."
-                className={`w-full px-3 py-2.5 rounded-lg border text-sm focus:ring-2 focus:ring-indigo-500/50 outline-none transition-all ${darkMode ? 'bg-slate-800 border-slate-700 text-slate-200 placeholder-slate-500' : 'bg-slate-50 border-slate-200 text-slate-700 placeholder-slate-400'}`}
-              />
-              <p className={`text-xs mt-2 flex items-center gap-1 ${darkMode ? 'text-slate-500' : 'text-slate-400'}`}>
-                <Info className="w-3 h-3" />
-                Get your API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-600 underline">Google AI Studio</a>
-              </p>
-            </div>
-            
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowApiKeyModal(false);
-                  setTempApiKey('');
-                }}
-                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${darkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleRetryWithNewKey}
-                disabled={!tempApiKey.trim()}
-                className={`flex-1 px-4 py-2.5 rounded-lg text-sm font-semibold text-white transition-all ${
-                  tempApiKey.trim() 
-                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-sm' 
-                    : 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed'
-                }`}
-              >
-                Retry with New Key
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

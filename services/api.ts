@@ -112,26 +112,32 @@ const cleanJsonOutput = (text: string): string => {
   return clean;
 };
 
-// DELAY: 15 seconds to be absolutely safe for Free Tier (approx 4 RPM target)
+// DELAY: 20 seconds to be absolutely safe for Free Tier (approx 3 RPM target)
 // This prevents 429 RESOURCE_EXHAUSTED errors by enforcing strict spacing.
-const SAFE_DELAY_MS = 15000;
+const SAFE_DELAY_MS = 20000;
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 // Retry helper with exponential backoff for 429 errors
-// Increased default retries to 3 and base delay to 15s for maximum robustness
-async function retryWithBackoff<T>(fn: () => Promise<T>, retries = 3, baseDelay = 15000): Promise<T> {
+// Increased default retries to 4 and base delay to 20s for maximum robustness
+async function retryWithBackoff<T>(fn: () => Promise<T>, retries = 4, baseDelay = 20000): Promise<T> {
   try {
     return await fn();
   } catch (error: any) {
+    const errorStr = error?.toString() || '';
+    const errorMsg = error?.message || '';
+    
     const isQuotaError = 
       error?.status === 429 || 
       error?.code === 429 || 
-      error?.message?.includes('429') || 
-      error?.message?.includes('quota') ||
-      error?.message?.includes('RESOURCE_EXHAUSTED');
+      errorStr.includes('429') || 
+      errorMsg.includes('429') || 
+      errorMsg.includes('quota') ||
+      errorMsg.includes('RESOURCE_EXHAUSTED') ||
+      error?.status === 503 ||
+      error?.status === 500;
 
     if (retries > 0 && isQuotaError) {
-      console.warn(`Quota limit hit (429). Retrying in ${baseDelay}ms...`);
+      console.warn(`Quota limit hit (429) or Server Error (5xx). Retrying in ${baseDelay}ms... (Attempts left: ${retries})`);
       await delay(baseDelay);
       return retryWithBackoff(fn, retries - 1, baseDelay * 2);
     }
@@ -141,12 +147,55 @@ async function retryWithBackoff<T>(fn: () => Promise<T>, retries = 3, baseDelay 
 
 // Simulation state
 let currentJob: JobStatus | null = null;
-let quotaErrorDetected = false;
+
+// Chat Service Implementation
+let chatInstance: any = null;
+
+export const ChatService = {
+  // Initialize or reset chat with context
+  initializeChat: (context?: StructuredResult) => {
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    // Create system prompt based on context if available
+    let systemInstruction = "You are the MoleculeX AI Assistant, an expert in pharmaceutical market research, clinical trials, and intellectual property strategy. You help users analyze drug development opportunities.";
+    
+    if (context) {
+      systemInstruction += `\n\nCURRENT CONTEXT: The user is analyzing a report with the following data:
+      - Summary: ${context.summary}
+      - Market: ${context.market.sales_mn_usd} Mn USD sales, ${context.market.cagr} CAGR.
+      - Top Competitors: ${context.market.top_competitors.join(', ')}.
+      - Patents: ${context.patents.length} key patents found.
+      - Clinical Trials: ${context.trials.length} trials found.
+      
+      Use this context to answer user questions specifically about this analysis.`;
+    }
+
+    chatInstance = ai.chats.create({
+      model: 'gemini-2.5-flash',
+      config: {
+        systemInstruction,
+      },
+    });
+  },
+
+  sendMessage: async (message: string): Promise<string> => {
+    if (!chatInstance) {
+      ChatService.initializeChat();
+    }
+    
+    try {
+      const result = await chatInstance!.sendMessage({ message });
+      return result.text;
+    } catch (error) {
+      console.error("Chat Error:", error);
+      return "I'm currently experiencing high traffic (Rate Limit). Please wait a moment and try again.";
+    }
+  }
+};
 
 export const ApiService = {
   startQuery: async (payload: QueryPayload): Promise<{ job_id: string }> => {
     const jobId = `job_${Date.now()}`;
-    quotaErrorDetected = false;
     currentJob = {
       jobId,
       progress: 0,
@@ -175,15 +224,11 @@ export const ApiService = {
     if (!currentJob || currentJob.jobId !== jobId) {
       throw new Error("Job not found");
     }
-    return { ...currentJob, quotaError: quotaErrorDetected };
+    return { ...currentJob };
   },
 
   getResult: async (jobId: string): Promise<StructuredResult> => {
     return (currentJob as any).finalResult; 
-  },
-
-  isQuotaError: (): boolean => {
-    return quotaErrorDetected;
   }
 };
 
@@ -192,9 +237,7 @@ export const ApiService = {
 async function runOrchestrator(jobId: string, payload: QueryPayload) {
   if (!currentJob) return;
 
-  // Use custom API key if provided, otherwise use env variable
-  const apiKey = payload.apiKey || process.env.API_KEY;
-  const ai = new GoogleGenAI({ apiKey });
+  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
   const modelSearch = 'gemini-2.5-flash';
   const modelReasoning = 'gemini-2.5-flash'; 
 
@@ -221,21 +264,9 @@ async function runOrchestrator(jobId: string, payload: QueryPayload) {
           return res;
       } catch (error: any) {
           console.error(`${agentType} failed:`, error);
-          
-          // Check if it's a quota error
-          const isQuotaError = 
-            error?.status === 429 || 
-            error?.code === 429 || 
-            error?.message?.includes('429') || 
-            error?.message?.includes('quota') ||
-            error?.message?.includes('RESOURCE_EXHAUSTED');
-          
-          if (isQuotaError) {
-            quotaErrorDetected = true;
-            updateStatus(agentType, AgentStatus.FAILED, `Quota exceeded. New API key required.`);
-          } else {
-            updateStatus(agentType, AgentStatus.FAILED, `Failed: ${error.message}`);
-          }
+          // Don't throw here, instead update status to FAILED and re-throw so the orchestrator can decide to continue or stop
+          // Or simpler: Update to FAILED and throw, but orchestrator catches it.
+          updateStatus(agentType, AgentStatus.FAILED, `Failed: ${error.message}`);
           throw error; 
       }
   };
@@ -264,10 +295,10 @@ async function runOrchestrator(jobId: string, payload: QueryPayload) {
       contents: `
       TASK: Analyze Import/Export trends for "${payload.molecule || payload.query}" in ${payload.region || 'Global'}.
       Find:
-      1. Import Volume (last 5 years).
-      2. Export Volume (last 5 years).
+      1. Import Volume (last 5 years: 2020-2024).
+      2. Export Volume (last 5 years: 2020-2024).
       3. Top Importing Countries.
-      Use Google Search.
+      Use Google Search to find trade statistics.
       `,
       config: { tools: [{ googleSearch: {} }] }
     });
@@ -318,6 +349,9 @@ async function runOrchestrator(jobId: string, payload: QueryPayload) {
     // 2. SEQUENTIAL EXECUTION WITH FAULT TOLERANCE
     // If one agent fails, we catch it, log it, and continue to the next.
     // This prevents "Critical Failure" if one agent hits a quota or network error.
+
+    // Initial warm-up delay
+    await delay(2000);
 
     // Agent 1: Market
     let marketRes = { text: "Market data unavailable." };
@@ -437,7 +471,7 @@ async function runOrchestrator(jobId: string, payload: QueryPayload) {
         reportResponse = await retryWithBackoff(runReport);
     } catch (e) {
         console.warn("Report Generation failed (Quota), retrying synthesis...");
-        await delay(15000);
+        await delay(20000); // Extra safety for final report
         reportResponse = await retryWithBackoff(runReport);
     }
 
@@ -476,22 +510,7 @@ async function runOrchestrator(jobId: string, payload: QueryPayload) {
   } catch (error: any) {
     // This catch block should only be hit if the MASTER or REPORT agents critical fail
     console.error("Orchestration Critical Failure", error);
-    
-    // Check if it's a quota error
-    const isQuotaError = 
-      error?.status === 429 || 
-      error?.code === 429 || 
-      error?.message?.includes('429') || 
-      error?.message?.includes('quota') ||
-      error?.message?.includes('RESOURCE_EXHAUSTED');
-    
-    if (isQuotaError) {
-      quotaErrorDetected = true;
-      updateStatus(AgentType.MASTER, AgentStatus.FAILED, `Quota limit exceeded. Please enter a new API key to continue.`);
-    } else {
-      updateStatus(AgentType.MASTER, AgentStatus.FAILED, `Critical failure: ${error.message}`);
-    }
-    
+    updateStatus(AgentType.MASTER, AgentStatus.FAILED, `Critical failure: ${error.message}`);
     if (currentJob) {
        currentJob.isComplete = true;
        (currentJob as any).finalResult = null;
