@@ -1,0 +1,5 @@
+{
+  "name": "moleculeX",
+  "description": "A Master Agent interface for pharmaceutical market research, orchestrating worker agents to analyze markets, patents, trials, and EXIM data.",
+  "requestFramePermissions": []
+}
