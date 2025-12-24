@@ -1,6 +1,9 @@
 
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, ReferenceLine, ScatterChart, Scatter, ZAxis, LabelList, ReferenceArea } from 'recharts';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
+  PieChart, Pie, Cell, ReferenceLine, ScatterChart, Scatter, ZAxis, LabelList, ReferenceArea 
+} from 'recharts';
 import { MarketData, TrialData, PatentData, EximData, CompetitorData } from '../types';
 
 interface ChartProps {
@@ -22,23 +25,38 @@ export const MarketChart: React.FC<MarketChartProps> = ({ data, isDarkMode }) =>
   ];
 
   return (
-    <div className="h-[280px] w-full">
-      <h4 className={`text-sm font-semibold mb-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Market Growth Projection (Mn USD)</h4>
-      <ResponsiveContainer width="100%" height={240}>
-        <BarChart data={trendData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+    <div className="h-[320px] w-full p-2">
+      <h4 className={`text-sm font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Market Growth Projection (Mn USD)</h4>
+      <ResponsiveContainer width="100%" height={280}>
+        <BarChart data={trendData} margin={{ top: 10, right: 30, left: 20, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
-          <XAxis dataKey="year" tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 11 }} />
-          <YAxis tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 11 }} />
+          <XAxis 
+            dataKey="year" 
+            tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12 }} 
+            axisLine={{ stroke: isDarkMode ? '#475569' : '#cbd5e1' }}
+          />
+          <YAxis 
+            tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12 }} 
+            axisLine={false}
+            tickLine={false}
+          />
           <Tooltip 
              contentStyle={{ 
                backgroundColor: isDarkMode ? '#1e293b' : '#fff', 
                borderColor: isDarkMode ? '#334155' : '#e2e8f0',
                borderRadius: '8px', 
                color: isDarkMode ? '#f1f5f9' : '#0f172a',
-               boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' 
+               boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' 
              }}
+             cursor={{ fill: isDarkMode ? '#334155' : '#f1f5f9', opacity: 0.4 }}
           />
-          <Bar dataKey="sales" fill="#3b82f6" radius={[4, 4, 0, 0]} name="Sales (USD Mn)" />
+          <Bar 
+            dataKey="sales" 
+            fill="#3b82f6" 
+            radius={[6, 6, 0, 0]} 
+            name="Sales (USD Mn)"
+            barSize={40}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -63,7 +81,7 @@ export const TrialsChart: React.FC<TrialsChartProps> = ({ data, isDarkMode }) =>
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
   return (
-    <div className="h-[340px] w-full flex flex-col">
+    <div className="h-[340px] w-full flex flex-col p-2">
       <h4 className={`text-sm font-semibold mb-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Clinical Trials by Phase</h4>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
@@ -71,12 +89,12 @@ export const TrialsChart: React.FC<TrialsChartProps> = ({ data, isDarkMode }) =>
             data={chartData}
             cx="50%"
             cy="45%"
-            innerRadius={50}
-            outerRadius={90}
+            innerRadius={60}
+            outerRadius={100}
             fill="#8884d8"
-            paddingAngle={4}
+            paddingAngle={5}
             dataKey="value"
-            label={({ name, value }) => `${name}: ${value}`}
+            label={({ name, value }) => `${name} (${value})`}
             labelLine={{ stroke: isDarkMode ? '#64748b' : '#94a3b8' }}
           >
             {chartData.map((entry, index) => (
@@ -89,13 +107,12 @@ export const TrialsChart: React.FC<TrialsChartProps> = ({ data, isDarkMode }) =>
                borderColor: isDarkMode ? '#334155' : '#e2e8f0',
                borderRadius: '8px', 
                color: isDarkMode ? '#f1f5f9' : '#0f172a',
-               fontSize: '12px'
              }}
           />
           <Legend 
-            wrapperStyle={{ fontSize: '11px', color: isDarkMode ? '#94a3b8' : '#64748b' }} 
+            wrapperStyle={{ fontSize: '12px', color: isDarkMode ? '#94a3b8' : '#64748b', paddingTop: '10px' }} 
             verticalAlign="bottom"
-            height={36}
+            iconType="circle"
           />
         </PieChart>
       </ResponsiveContainer>
@@ -109,53 +126,56 @@ interface EximChartProps extends ChartProps {
 
 export const EximChart: React.FC<EximChartProps> = ({ data, isDarkMode }) => {
   return (
-    <div className="h-[300px] w-full">
-      <h4 className={`text-sm font-semibold mb-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Import vs Export Volume (Last 5 Years)</h4>
-      <ResponsiveContainer width="100%" height={260}>
-        <BarChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+    <div className="h-[320px] w-full p-2">
+      <h4 className={`text-sm font-semibold mb-4 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Import vs Export Volume</h4>
+      <ResponsiveContainer width="100%" height={280}>
+        <BarChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
-          <XAxis dataKey="year" tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 11 }} />
-          <YAxis tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 11 }} />
+          <XAxis dataKey="year" tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12 }} axisLine={{ stroke: isDarkMode ? '#475569' : '#cbd5e1' }} />
+          <YAxis tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12 }} axisLine={false} tickLine={false} />
           <Tooltip 
              contentStyle={{ 
                backgroundColor: isDarkMode ? '#1e293b' : '#fff', 
                borderColor: isDarkMode ? '#334155' : '#e2e8f0',
                borderRadius: '8px', 
                color: isDarkMode ? '#f1f5f9' : '#0f172a',
-               fontSize: '12px'
              }}
+             cursor={{ fill: isDarkMode ? '#334155' : '#f1f5f9', opacity: 0.4 }}
           />
-          <Legend wrapperStyle={{ fontSize: '11px' }} />
-          <Bar dataKey="import_volume" fill="#ef4444" name="Imports" radius={[4, 4, 0, 0]} />
-          <Bar dataKey="export_volume" fill="#10b981" name="Exports" radius={[4, 4, 0, 0]} />
+          <Legend wrapperStyle={{ paddingTop: '10px', fontSize: '12px' }} />
+          <Bar dataKey="import_volume" fill="#ef4444" name="Imports" radius={[4, 4, 0, 0]} barSize={20} />
+          <Bar dataKey="export_volume" fill="#10b981" name="Exports" radius={[4, 4, 0, 0]} barSize={20} />
         </BarChart>
       </ResponsiveContainer>
     </div>
   );
 };
 
+// --- PATENT CHART ---
+
 interface PatentTimelineChartProps extends ChartProps {
   data: PatentData[];
 }
 
-const CustomPatentTooltip = ({ active, payload, label, baseYear, isDarkMode }: any) => {
+const CustomPatentTooltip = ({ active, payload, isDarkMode }: any) => {
   if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    if (!data.realStart || !data.realEnd) return null;
+    // Note: Recharts payload structure for stacked bars can be nested
+    const data = payload[1]?.payload || payload[0]?.payload; 
     
+    if (!data) return null;
+
     return (
-      <div className={`p-3 border shadow-xl rounded-lg text-sm z-50 ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-white border-slate-200 text-slate-800'}`}>
-        <p className="font-bold mb-1">{data.patent_id}</p>
-        <p className={`text-xs mb-2 max-w-[200px] truncate ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>{data.molecule}</p>
-        <div className="flex gap-4 text-xs">
-          <div className="flex flex-col">
-            <span className={`uppercase text-[10px] font-semibold ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Filing</span>
-            <span className={`font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{data.realStart}</span>
-          </div>
-          <div className="flex flex-col">
-            <span className={`uppercase text-[10px] font-semibold ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Expiry</span>
-            <span className={`font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-700'}`}>{data.realEnd}</span>
-          </div>
+      <div className={`p-3 border shadow-xl rounded-lg text-sm z-50 max-w-xs ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-white border-slate-200 text-slate-800'}`}>
+        <p className="font-bold mb-1 text-indigo-500">{data.patent_id}</p>
+        <p className="font-semibold text-xs mb-2">{data.assignee}</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs mb-2">
+           <div className="opacity-70">Filed:</div>
+           <div>{data.realStart}</div>
+           <div className="opacity-70">Expires:</div>
+           <div className="text-red-500 font-medium">{data.realEnd}</div>
+        </div>
+        <div className={`text-[10px] p-1.5 rounded bg-opacity-10 ${isDarkMode ? 'bg-slate-700' : 'bg-slate-100'}`}>
+           <span className="font-bold opacity-70">Type: </span>{data.type}
         </div>
       </div>
     );
@@ -173,172 +193,261 @@ const getYear = (dateStr: string): number | null => {
 };
 
 export const PatentTimelineChart: React.FC<PatentTimelineChartProps> = ({ data, isDarkMode }) => {
-  // 1. Robust Validation
   const currentYear = new Date().getFullYear();
-  const validData = data.filter(p => {
-    const start = getYear(p.filing_date);
-    const end = getYear(p.expiry);
-    return (
-        start !== null && 
-        end !== null && 
-        end > start && 
-        start > 1980 && 
-        end < 2100
-    );
-  });
-
-  const allYears = validData.flatMap(p => {
-      const s = getYear(p.filing_date)!;
-      const e = getYear(p.expiry)!;
-      return [s, e];
-  });
   
-  if (allYears.length === 0) {
+  // Filter and Process Data
+  const processedData = data
+    .map(p => {
+      const start = getYear(p.filing_date);
+      const end = getYear(p.expiry);
+      
+      if (!start || !end || end <= start) return null;
+      
+      return {
+        ...p,
+        realStart: start,
+        realEnd: end,
+        type: p.patent_type || 'Patent',
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a!.realStart - b!.realStart) as (PatentData & { realStart: number, realEnd: number, type: string })[];
+
+  if (processedData.length === 0) {
       return (
-          <div className={`h-full w-full min-h-[250px] flex flex-col items-center justify-center rounded-lg border border-dashed ${isDarkMode ? 'bg-slate-800/30 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
+          <div className={`h-[300px] w-full flex flex-col items-center justify-center rounded-lg border border-dashed ${isDarkMode ? 'bg-slate-800/30 border-slate-700' : 'bg-slate-50 border-slate-100'}`}>
             <p className={`text-sm ${isDarkMode ? 'text-slate-500' : 'text-slate-400'}`}>Timeline data unavailable</p>
-            <p className={`text-[10px] ${isDarkMode ? 'text-slate-600' : 'text-slate-300'}`}>Dates missing or invalid</p>
           </div>
       );
   }
 
-  const minYear = Math.min(...allYears) - 1;
-  const maxYear = Math.max(...allYears) + 2;
-  const range = maxYear - minYear;
+  const minYear = Math.min(...processedData.map(d => d.realStart)) - 1;
+  const maxYear = Math.max(...processedData.map(d => d.realEnd)) + 2;
+  
+  // Prepare chart data with offsets for stacked bar
+  const chartData = processedData.map(d => ({
+    ...d,
+    startOffset: d.realStart - minYear,
+    duration: d.realEnd - d.realStart,
+    displayLabel: `${d.patent_id} (${d.assignee ? d.assignee.substring(0, 15) + '...' : 'Unknown'})`
+  }));
 
-  const chartData = validData.map(p => {
-    const start = getYear(p.filing_date)!;
-    const end = getYear(p.expiry)!;
-    return {
-      patent_id: p.patent_id,
-      molecule: p.molecule,
-      realStart: start,
-      realEnd: end,
-      offset: start - minYear,
-      duration: end - start
-    };
-  });
+  // Dynamic Height Calculation: 60px per patent row + buffer
+  const chartHeight = Math.max(400, chartData.length * 60);
+
+  // Color mapping based on type
+  const getColor = (type: string) => {
+    const t = type ? type.toLowerCase() : '';
+    if (t.includes('composition')) return '#8884d8'; // Purple
+    if (t.includes('method')) return '#82ca9d'; // Green
+    if (t.includes('formulation')) return '#ffc658'; // Orange
+    return '#3b82f6'; // Blue
+  };
 
   return (
-    <div className="h-[280px] w-full">
-      <h4 className={`text-sm font-semibold mb-3 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Patent Expiry Timeline</h4>
-      <ResponsiveContainer width="100%" height={240}>
-        <BarChart
-          layout="vertical"
-          data={chartData}
-          margin={{ top: 5, right: 30, left: 100, bottom: 5 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
-          <XAxis 
-            type="number" 
-            domain={[0, range]} 
-            tickFormatter={(val) => Math.round(val + minYear).toString()} 
-            tick={{ fontSize: 10, fill: isDarkMode ? '#94a3b8' : '#64748b' }}
-            interval="preserveStartEnd"
-          />
-          <YAxis 
-            type="category" 
-            dataKey="patent_id" 
-            width={90} 
-            tick={{ fontSize: 10, fill: isDarkMode ? '#94a3b8' : '#475569', fontWeight: 500 }} 
-          />
-          <Tooltip 
-            content={<CustomPatentTooltip baseYear={minYear} isDarkMode={isDarkMode} />} 
-            cursor={{fill: isDarkMode ? '#334155' : '#f1f5f9', opacity: 0.5}} 
-          />
-          <Bar dataKey="offset" stackId="a" fill="transparent" />
-          <Bar 
-            dataKey="duration" 
-            stackId="a" 
-            fill="url(#colorGradient)" 
-            radius={[0, 4, 4, 0]} 
-            barSize={14} 
-          />
-          <defs>
-            <linearGradient id="colorGradient" x1="0" y1="0" x2="1" y2="0">
-              <stop offset="0%" stopColor="#f97316" />
-              <stop offset="100%" stopColor="#fb923c" />
-            </linearGradient>
-          </defs>
-          
-          {currentYear > minYear && currentYear < maxYear && (
-            <ReferenceLine x={currentYear - minYear} stroke="#ef4444" strokeDasharray="3 3" strokeWidth={1.5} label={{ value: 'Today', fill: '#ef4444', fontSize: 9, position: 'top' }} />
-          )}
-        </BarChart>
-      </ResponsiveContainer>
+    <div className="w-full">
+      <div className="flex flex-wrap justify-between items-center mb-4 px-2 gap-2">
+        <h4 className={`text-sm font-semibold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Patent Lifespan Analysis</h4>
+        <div className="flex gap-3 text-[10px] flex-wrap">
+           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#8884d8]"></span> Composition</span>
+           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#82ca9d]"></span> Method</span>
+           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-[#ffc658]"></span> Formulation</span>
+        </div>
+      </div>
+      
+      {/* Scrollable Container */}
+      <div className="overflow-x-auto overflow-y-hidden">
+        <div style={{ height: `${chartHeight}px`, minWidth: '600px' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              layout="vertical"
+              data={chartData}
+              margin={{ top: 0, right: 30, left: 150, bottom: 20 }}
+              barCategoryGap={10}
+              barGap={0}
+            >
+              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={true} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
+              <XAxis 
+                type="number" 
+                domain={[0, maxYear - minYear]} 
+                tickFormatter={(val) => (minYear + val).toString()} 
+                tick={{ fontSize: 11, fill: isDarkMode ? '#94a3b8' : '#64748b' }}
+                orientation="top"
+                axisLine={{ stroke: isDarkMode ? '#475569' : '#cbd5e1' }}
+              />
+              <YAxis 
+                type="category" 
+                dataKey="displayLabel" 
+                width={140} 
+                tick={{ fontSize: 11, fill: isDarkMode ? '#cbd5e1' : '#475569', fontWeight: 500 }} 
+              />
+              <Tooltip 
+                content={<CustomPatentTooltip isDarkMode={isDarkMode} />} 
+                cursor={{fill: isDarkMode ? '#334155' : '#f1f5f9', opacity: 0.5}} 
+              />
+              
+              {/* Transparent Start Bar to offset the real bar */}
+              <Bar dataKey="startOffset" stackId="a" fill="transparent" />
+              
+              {/* Visible Duration Bar */}
+              <Bar 
+                dataKey="duration" 
+                stackId="a" 
+                radius={[0, 4, 4, 0]} 
+                barSize={24}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={getColor(entry.type)} />
+                ))}
+              </Bar>
+              
+              {/* Current Year Line */}
+              <ReferenceLine x={currentYear - minYear} stroke="#ef4444" strokeDasharray="3 3" label={{ value: 'Today', fill: '#ef4444', fontSize: 10, position: 'insideBottom' }} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
     </div>
   );
 };
 
+// --- COMPETITIVE CHART ---
 
 interface CompetitiveGridProps extends ChartProps {
   data: CompetitorData[];
 }
 
 export const CompetitiveGridChart: React.FC<CompetitiveGridProps> = ({ data, isDarkMode }) => {
-  // Use fixed 0-100 domain for the 2x2 matrix
+  // Fixed 0-100 domain for consistent quadrants
   const domain = [0, 100];
 
   return (
-    <div className="h-full w-full min-h-[350px]">
-      <h4 className={`text-sm font-semibold mb-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Competitive Landscape</h4>
-      <ResponsiveContainer width="100%" height="100%">
-        <ScatterChart
-          margin={{ top: 30, right: 30, bottom: 30, left: 30 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
-          <XAxis 
-            type="number" 
-            dataKey="market_share_index" 
-            name="Market Share" 
-            domain={domain}
-            label={{ value: 'Market Share Index', position: 'bottom', offset: 0, fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12 }}
-            tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 10 }}
-          />
-          <YAxis 
-            type="number" 
-            dataKey="innovation_index" 
-            name="Innovation" 
-            domain={domain}
-            label={{ value: 'Innovation Score', angle: -90, position: 'insideLeft', fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12 }}
-            tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 10 }}
-          />
-          <ZAxis type="category" dataKey="name" name="Company" />
-          <Tooltip 
-            cursor={{ strokeDasharray: '3 3' }} 
-            content={({ active, payload }) => {
-              if (active && payload && payload.length) {
-                const d = payload[0].payload;
-                return (
-                  <div className={`p-2 border rounded shadow-lg text-xs ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-white border-slate-200 text-slate-800'}`}>
-                    <p className="font-bold">{d.name}</p>
-                    <p>Share: {d.market_share_index}</p>
-                    <p>Innovation: {d.innovation_index}</p>
-                    <p className="italic text-[10px] mt-1 text-slate-500">{d.type}</p>
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
-          
-          {/* Quadrant Background Labels using ReferenceArea for cleaner look or ReferenceLines */}
-          <ReferenceLine x={50} stroke={isDarkMode ? '#475569' : '#cbd5e1'} strokeDasharray="3 3" />
-          <ReferenceLine y={50} stroke={isDarkMode ? '#475569' : '#cbd5e1'} strokeDasharray="3 3" />
-          
-          {/* Corner Labels */}
-          <ReferenceLine y={95} x={95} stroke="none" label={{ value: "LEADERS", position: 'insideTopRight', fill: isDarkMode ? '#4ade80' : '#15803d', fontSize: 11, fontWeight: 'bold' }} />
-          <ReferenceLine y={95} x={5} stroke="none" label={{ value: "INNOVATORS", position: 'insideTopLeft', fill: isDarkMode ? '#60a5fa' : '#1d4ed8', fontSize: 11, fontWeight: 'bold' }} />
-          <ReferenceLine y={5} x={95} stroke="none" label={{ value: "ESTABLISHED", position: 'insideBottomRight', fill: isDarkMode ? '#facc15' : '#a16207', fontSize: 11, fontWeight: 'bold' }} />
-          <ReferenceLine y={5} x={5} stroke="none" label={{ value: "NICHE", position: 'insideBottomLeft', fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 11, fontWeight: 'bold' }} />
+    <div className="h-[500px] w-full p-2 flex flex-col">
+      <div className="flex justify-between items-center mb-4">
+        <h4 className={`text-sm font-semibold ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Competitive Landscape Matrix</h4>
+        <div className={`text-[10px] px-2 py-1 rounded border ${isDarkMode ? 'bg-slate-800 border-slate-700 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+           Size = Market Influence
+        </div>
+      </div>
+      
+      <div className="flex-1 w-full min-h-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <ScatterChart margin={{ top: 20, right: 30, bottom: 40, left: 30 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
+            
+            {/* Quadrant Backgrounds */}
+            {/* Top Right: Leaders */}
+            <ReferenceArea x1={50} x2={100} y1={50} y2={100} fill={isDarkMode ? "#064e3b" : "#dcfce7"} fillOpacity={0.15} />
+            {/* Top Left: Innovators */}
+            <ReferenceArea x1={0} x2={50} y1={50} y2={100} fill={isDarkMode ? "#1e3a8a" : "#dbeafe"} fillOpacity={0.15} />
+            {/* Bottom Right: Established */}
+            <ReferenceArea x1={50} x2={100} y1={0} y2={50} fill={isDarkMode ? "#713f12" : "#fef9c3"} fillOpacity={0.15} />
+            {/* Bottom Left: Niche */}
+            <ReferenceArea x1={0} x2={50} y1={0} y2={50} fill={isDarkMode ? "#374151" : "#f3f4f6"} fillOpacity={0.15} />
 
-          <Scatter name="Competitors" data={data} fill="#8884d8">
-            {data.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={['#6366f1', '#10b981', '#f59e0b', '#ec4899'][index % 4]} />
+            <XAxis 
+              type="number" 
+              dataKey="market_share_index" 
+              name="Market Share" 
+              domain={domain}
+              label={{ value: 'Market Share Index →', position: 'bottom', offset: 0, fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: 600 }}
+              tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 11 }}
+            />
+            <YAxis 
+              type="number" 
+              dataKey="innovation_index" 
+              name="Innovation" 
+              domain={domain}
+              label={{ value: 'Innovation Score ↑', angle: -90, position: 'insideLeft', fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: 600 }}
+              tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 11 }}
+            />
+            <ZAxis type="category" dataKey="name" name="Company" />
+            
+            <Tooltip 
+              cursor={{ strokeDasharray: '3 3' }} 
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const d = payload[0].payload;
+                  return (
+                    <div className={`p-3 border rounded-lg shadow-xl backdrop-blur-md ${isDarkMode ? 'bg-slate-900/90 border-slate-700 text-slate-200' : 'bg-white/90 border-slate-200 text-slate-800'}`}>
+                      <p className="font-bold text-sm mb-1">{d.name}</p>
+                      <div className="text-xs space-y-1">
+                        <p>Share Index: <span className="font-mono font-semibold">{d.market_share_index}</span></p>
+                        <p>Innovation: <span className="font-mono font-semibold">{d.innovation_index}</span></p>
+                        <p className={`italic mt-2 pt-1 border-t ${isDarkMode ? 'border-slate-700 text-slate-400' : 'border-slate-100 text-slate-500'}`}>{d.type}</p>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
+            
+            {/* Quadrant Labels */}
+            <ReferenceLine y={98} x={98} stroke="none" label={{ value: "LEADERS", position: 'insideTopRight', fill: isDarkMode ? '#4ade80' : '#15803d', fontSize: 12, fontWeight: '900', opacity: 0.6 }} />
+            <ReferenceLine y={98} x={2} stroke="none" label={{ value: "INNOVATORS", position: 'insideTopLeft', fill: isDarkMode ? '#60a5fa' : '#1d4ed8', fontSize: 12, fontWeight: '900', opacity: 0.6 }} />
+            <ReferenceLine y={2} x={98} stroke="none" label={{ value: "ESTABLISHED", position: 'insideBottomRight', fill: isDarkMode ? '#facc15' : '#a16207', fontSize: 12, fontWeight: '900', opacity: 0.6 }} />
+            <ReferenceLine y={2} x={2} stroke="none" label={{ value: "NICHE", position: 'insideBottomLeft', fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 12, fontWeight: '900', opacity: 0.6 }} />
+
+            {/* Axes Lines */}
+            <ReferenceLine x={50} stroke={isDarkMode ? '#475569' : '#cbd5e1'} strokeDasharray="3 3" strokeWidth={2} />
+            <ReferenceLine y={50} stroke={isDarkMode ? '#475569' : '#cbd5e1'} strokeDasharray="3 3" strokeWidth={2} />
+            
+            <Scatter name="Competitors" data={data}>
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={['#6366f1', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6'][index % 5]} />
+              ))}
+            </Scatter>
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  );
+};
+
+// --- GTM TIER CHART ---
+
+interface TierChartProps extends ChartProps {
+  data: { tier1: number; tier2: number; tier3: number };
+}
+
+export const TierDistributionChart: React.FC<TierChartProps> = ({ data, isDarkMode }) => {
+  const chartData = [
+    { name: 'Metro / Tier 1', value: data.tier1, fill: '#6366f1' },
+    { name: 'Tier 2', value: data.tier2, fill: '#8b5cf6' },
+    { name: 'Rural / Tier 3', value: data.tier3, fill: '#ec4899' },
+  ];
+
+  return (
+    <div className="h-[200px] w-full p-2">
+      <h4 className={`text-sm font-semibold mb-2 ${isDarkMode ? 'text-slate-400' : 'text-slate-500'}`}>Target City Tier Distribution</h4>
+      <ResponsiveContainer width="100%" height={160}>
+        <BarChart layout="vertical" data={chartData} margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={isDarkMode ? '#334155' : '#e2e8f0'} />
+          <XAxis type="number" hide />
+          <YAxis 
+            type="category" 
+            dataKey="name" 
+            tick={{ fill: isDarkMode ? '#94a3b8' : '#64748b', fontSize: 10, fontWeight: 600 }} 
+            width={90}
+            axisLine={false}
+            tickLine={false}
+          />
+          <Tooltip 
+             cursor={{fill: 'transparent'}}
+             contentStyle={{ 
+               backgroundColor: isDarkMode ? '#1e293b' : '#fff', 
+               borderColor: isDarkMode ? '#334155' : '#e2e8f0',
+               borderRadius: '8px', 
+               color: isDarkMode ? '#f1f5f9' : '#0f172a'
+             }}
+          />
+          <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24} label={{ position: 'right', fill: isDarkMode ? '#cbd5e1' : '#475569', fontSize: 11, formatter: (val: number) => `${val}%` }}>
+            {chartData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={entry.fill} />
             ))}
-            <LabelList dataKey="name" position="top" offset={10} style={{ fontSize: 10, fill: isDarkMode ? '#cbd5e1' : '#475569', fontWeight: 500 }} />
-          </Scatter>
-        </ScatterChart>
+          </Bar>
+        </BarChart>
       </ResponsiveContainer>
     </div>
   );

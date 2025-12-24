@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { QueryPayload } from '../types';
-import { Search, Upload, FileType, Play, Settings2 } from 'lucide-react';
+import { QueryPayload, InternalFileData } from '../types';
+import { Search, Upload, FileType, Play, Settings2, X, CheckCircle2 } from 'lucide-react';
+import { readFileContent } from '../utils/fileHelpers';
 
 interface ChatPanelProps {
   onSearch: (payload: QueryPayload) => void;
@@ -12,15 +13,50 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onSearch, isProcessing }) 
   const [region, setRegion] = useState('India');
   const [molecule, setMolecule] = useState('');
   const [generatePdf, setGeneratePdf] = useState(true);
+  
+  const [file, setFile] = useState<File | null>(null);
+  const [isReadingFile, setIsReadingFile] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
+    }
+  };
+
+  const clearFile = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setFile(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
+
+    let fileData: InternalFileData | undefined = undefined;
+
+    if (file) {
+      setIsReadingFile(true);
+      try {
+        const content = await readFileContent(file);
+        fileData = {
+          name: file.name,
+          content: content,
+          type: file.type.includes('pdf') ? 'pdf' : 'txt'
+        };
+      } catch (err) {
+        console.error("File read error", err);
+        alert("Failed to read file. Proceeding without attachment.");
+      } finally {
+        setIsReadingFile(false);
+      }
+    }
+
     onSearch({
       query,
       region,
       molecule: molecule || undefined,
-      generate_pdf: generatePdf
+      generate_pdf: generatePdf,
+      fileData
     });
   };
 
@@ -38,15 +74,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onSearch, isProcessing }) 
               onChange={(e) => setQuery(e.target.value)}
               placeholder="e.g. Find whitespace opportunities in respiratory diseases (COPD) in India considering recent patent expiries."
               className="w-full min-h-[100px] p-4 pr-12 rounded-lg border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all resize-none text-slate-800 placeholder-slate-400"
-              disabled={isProcessing}
+              disabled={isProcessing || isReadingFile}
             />
             <div className="absolute bottom-3 right-3">
                <button 
                 type="submit" 
-                disabled={!query.trim() || isProcessing}
-                className={`p-2 rounded-lg transition-all ${!query.trim() || isProcessing ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg'}`}
+                disabled={!query.trim() || isProcessing || isReadingFile}
+                className={`p-2 rounded-lg transition-all ${!query.trim() || isProcessing || isReadingFile ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md hover:shadow-lg'}`}
               >
-                {isProcessing ? (
+                {isProcessing || isReadingFile ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <Play className="w-5 h-5 ml-0.5" fill="currentColor" />
@@ -67,7 +103,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onSearch, isProcessing }) 
                   value={region} 
                   onChange={(e) => setRegion(e.target.value)}
                   className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
-                  disabled={isProcessing}
+                  disabled={isProcessing || isReadingFile}
                 >
                   <option>India</option>
                   <option>USA</option>
@@ -80,7 +116,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onSearch, isProcessing }) 
                   value={molecule}
                   onChange={(e) => setMolecule(e.target.value)}
                   className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
-                  disabled={isProcessing}
+                  disabled={isProcessing || isReadingFile}
                 />
              </div>
           </div>
@@ -90,13 +126,25 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ onSearch, isProcessing }) 
                <Upload className="w-3 h-3" /> Context (Internal Data)
              </label>
              <div className="flex items-center justify-center w-full">
-                <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-[42px] border-2 border-slate-200 border-dashed rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors">
-                    <div className="flex items-center gap-2 text-slate-500">
-                        <FileType className="w-4 h-4" />
-                        <span className="text-sm">Upload PDF/CSV (Optional)</span>
+                {!file ? (
+                  <label htmlFor="dropzone-file" className="flex flex-col items-center justify-center w-full h-[42px] border-2 border-slate-200 border-dashed rounded-lg cursor-pointer bg-slate-50 hover:bg-slate-100 transition-colors">
+                      <div className="flex items-center gap-2 text-slate-500">
+                          <FileType className="w-4 h-4" />
+                          <span className="text-sm">Upload PDF/CSV</span>
+                      </div>
+                      <input id="dropzone-file" type="file" className="hidden" onChange={handleFileChange} accept=".pdf,.csv,.txt" disabled={isProcessing || isReadingFile} />
+                  </label>
+                ) : (
+                  <div className="flex items-center justify-between w-full h-[42px] px-3 bg-indigo-50 border border-indigo-200 rounded-lg">
+                    <div className="flex items-center gap-2 overflow-hidden">
+                       <CheckCircle2 className="w-4 h-4 text-indigo-600 flex-shrink-0" />
+                       <span className="text-sm text-indigo-700 font-medium truncate max-w-[150px]">{file.name}</span>
                     </div>
-                    <input id="dropzone-file" type="file" className="hidden" disabled={isProcessing} />
-                </label>
+                    <button onClick={clearFile} className="p-1 hover:bg-indigo-100 rounded-full text-indigo-500">
+                       <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
             </div>
           </div>
         </div>

@@ -91,14 +91,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onStart, isDarkMode, t
           </div>
         </div>
 
-        {/* CTA */}
-        <button 
-          onClick={onStart}
-          className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 text-lg font-bold text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/50 transition-all hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
-        >
-          Start Analysis
-          <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-        </button>
+        {/* CTA Buttons */}
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <a 
+            href="https://youtu.be/VOU2sL3VK7Y"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-slate-800 dark:bg-slate-700 text-white font-semibold text-sm hover:bg-slate-700 dark:hover:bg-slate-600 transition-all shadow-lg hover:shadow-xl"
+          >
+            <Play className="w-4 h-4" />
+            Watch Live Demo
+          </a>
+
+          <button 
+            onClick={onStart}
+            className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 text-lg font-bold text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/50 transition-all hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+          >
+            Start Analysis
+            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+          </button>
+        </div>
 
         {/* Stats */}
         <div className="mt-20 grid grid-cols-1 gap-8 sm:grid-cols-3 text-center">

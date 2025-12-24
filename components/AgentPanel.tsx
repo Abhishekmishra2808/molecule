@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+
+import React, { useEffect, useRef, useState } from 'react';
 import { AgentStatus, AgentType, JobStatus } from '../types';
-import { CheckCircle2, Clock, XCircle, BrainCircuit, Activity, FileText, Globe, FlaskConical, Container, TrendingUp, Cpu, Loader2, Circle } from 'lucide-react';
+import { CheckCircle2, Clock, XCircle, BrainCircuit, Activity, FileText, Globe, FlaskConical, Container, TrendingUp, Cpu, Loader2, Circle, Users, Scale, Truck, Tag, Dna, Library, HardHat, Gavel, FileCheck, ThumbsUp, Microscope, Newspaper, Radio, List, Terminal, Sparkles, ShieldCheck, SearchCode, ScaleIcon, BarChart3, Pill } from 'lucide-react';
 
 interface AgentPanelProps {
   jobStatus: JobStatus | null;
@@ -8,13 +9,23 @@ interface AgentPanelProps {
 
 const AgentIcon = ({ type, className }: { type: AgentType | string; className?: string }) => {
   switch (type) {
-    case AgentType.MASTER: return <BrainCircuit className={className} />;
+    case AgentType.COUNCIL_HEAD: return <BrainCircuit className={className} />;
+    case AgentType.COUNCIL_CRITIC: return <ScaleIcon className={className} />;
+    case AgentType.COUNCIL_JUDGE: return <ShieldCheck className={className} />;
+    case AgentType.MASTER: return <Sparkles className={className} />;
     case AgentType.MARKET: return <TrendingUp className={className} />;
+    case AgentType.PRICING: return <Tag className={className} />;
+    case AgentType.EXIM: return <Truck className={className} />;
+    case AgentType.FINANCIAL: return <BarChart3 className={className} />;
     case AgentType.PATENT: return <FileText className={className} />;
+    case AgentType.POLICY: return <Gavel className={className} />;
+    case AgentType.REGULATORY_UPDATES: return <Radio className={className} />;
     case AgentType.TRIALS: return <FlaskConical className={className} />;
-    case AgentType.EXIM: return <Container className={className} />;
-    case AgentType.WEB: return <Globe className={className} />;
-    case AgentType.INTERNAL: return <Cpu className={className} />;
+    case AgentType.SCIENTIFIC: return <Microscope className={className} />;
+    case AgentType.BIOLOGY: return <Dna className={className} />;
+    case AgentType.LITERATURE: return <Library className={className} />;
+    case AgentType.EPIDEMIOLOGY: return <Users className={className} />;
+    case AgentType.FEASIBILITY: return <FileCheck className={className} />;
     case AgentType.REPORT: return <Activity className={className} />;
     default: return <Circle className={className} />;
   }
@@ -23,128 +34,131 @@ const AgentIcon = ({ type, className }: { type: AgentType | string; className?: 
 const StatusIcon = ({ status }: { status: AgentStatus }) => {
   switch (status) {
     case AgentStatus.COMPLETED: 
-      return <CheckCircle2 className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />;
+      return <CheckCircle2 className="w-4 h-4 text-emerald-500" />;
     case AgentStatus.RUNNING: 
-      return <Loader2 className="w-5 h-5 text-blue-500 dark:text-blue-400 animate-spin" />;
+      return <Loader2 className="w-4 h-4 text-indigo-500 animate-spin" />;
     case AgentStatus.FAILED: 
-      return <XCircle className="w-5 h-5 text-red-500 dark:text-red-400" />;
+      return <XCircle className="w-4 h-4 text-red-500" />;
     case AgentStatus.WAITING: 
-      return <Clock className="w-5 h-5 text-slate-300 dark:text-slate-600" />;
+      return <Clock className="w-4 h-4 text-slate-300 dark:text-slate-600" />;
     default: 
-      return <Clock className="w-5 h-5 text-slate-300 dark:text-slate-600" />;
+      return <Clock className="w-4 h-4 text-slate-300 dark:text-slate-600" />;
   }
 };
 
 export const AgentPanel: React.FC<AgentPanelProps> = ({ jobStatus }) => {
+  const [activeTab, setActiveTab] = useState<'agents' | 'logs'>('agents');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (scrollRef.current) {
+    if (activeTab === 'logs' && scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [jobStatus?.logs]);
+  }, [jobStatus?.logs, activeTab]);
 
   if (!jobStatus) {
     return (
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 h-full flex flex-col items-center justify-center p-8 text-slate-400 dark:text-slate-500">
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 h-full flex flex-col items-center justify-center p-8 text-slate-400">
         <BrainCircuit className="w-16 h-16 mb-4 opacity-20" />
-        <p>System Idle. Initiate a query to start agents.</p>
+        <p className="text-sm font-medium">System Idle. Initiate a query to start the swarm.</p>
       </div>
     );
   }
 
-  const agentList = [
-    AgentType.MASTER,
-    AgentType.MARKET,
-    AgentType.WEB,
-    AgentType.PATENT,
-    AgentType.TRIALS,
-    AgentType.EXIM,
-    AgentType.REPORT
+  const sections = [
+    { 
+      title: 'Strategic Council', 
+      icon: <Sparkles className="w-3 h-3 text-amber-500" />,
+      agents: [AgentType.COUNCIL_HEAD, AgentType.COUNCIL_CRITIC, AgentType.COUNCIL_JUDGE] 
+    },
+    { 
+      title: 'Market Intelligence Swarm', 
+      icon: <TrendingUp className="w-3 h-3 text-blue-500" />,
+      agents: [AgentType.MARKET, AgentType.PRICING, AgentType.EXIM, AgentType.FINANCIAL] 
+    },
+    { 
+      title: 'Scientific Swarm', 
+      icon: <Microscope className="w-3 h-3 text-emerald-500" />,
+      agents: [AgentType.TRIALS, AgentType.SCIENTIFIC, AgentType.BIOLOGY, AgentType.LITERATURE, AgentType.EPIDEMIOLOGY] 
+    },
+    { 
+      title: 'Regulatory & Policy Swarm', 
+      icon: <ShieldCheck className="w-3 h-3 text-orange-500" />,
+      agents: [AgentType.PATENT, AgentType.POLICY, AgentType.REGULATORY_UPDATES, AgentType.FEASIBILITY] 
+    },
+    { 
+      title: 'Synthesis', 
+      icon: <Activity className="w-3 h-3 text-indigo-500" />,
+      agents: [AgentType.REPORT] 
+    }
   ];
+
+  const renderAgent = (agentType: AgentType) => {
+    const status = jobStatus.agents[agentType] || AgentStatus.IDLE;
+    const thought = jobStatus.agentThoughts[agentType];
+    const isRunning = status === AgentStatus.RUNNING;
+
+    return (
+      <div key={agentType} className={`flex items-start justify-between p-2.5 rounded-lg border transition-all mb-1.5 ${
+        isRunning ? 'bg-indigo-50/50 border-indigo-200 dark:bg-indigo-900/10 dark:border-indigo-800' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800'
+      }`}>
+        <div className="flex items-start gap-3 overflow-hidden">
+          <div className={`p-1.5 rounded-md mt-0.5 ${isRunning ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`}>
+            <AgentIcon type={agentType} className="w-3.5 h-3.5" />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <span className={`text-xs font-semibold ${isRunning ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'}`}>{agentType}</span>
+            {isRunning && thought && (
+              <span className="text-[9px] text-indigo-500 italic truncate animate-pulse">{thought}</span>
+            )}
+          </div>
+        </div>
+        <StatusIcon status={status} />
+      </div>
+    );
+  };
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 h-full flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/30 flex justify-between items-center">
-        <h3 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
-          <BrainCircuit className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-          Agent Orchestration
-        </h3>
-        <span className="text-xs font-mono bg-slate-200 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-400">
-          JOB: {jobStatus.jobId.slice(-6)}
-        </span>
+      <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/30">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+            <Cpu className="w-5 h-5 text-indigo-600" />
+            Swarm Orchestrator
+          </h3>
+          <div className="h-1.5 w-20 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+            <div className="h-full bg-indigo-600 transition-all duration-500" style={{ width: `${jobStatus.progress}%` }} />
+          </div>
+        </div>
+        <div className="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-lg">
+          <button onClick={() => setActiveTab('agents')} className={`flex-1 py-1 text-xs font-medium rounded-md transition-all ${activeTab === 'agents' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Active Swarm</button>
+          <button onClick={() => setActiveTab('logs')} className={`flex-1 py-1 text-xs font-medium rounded-md transition-all ${activeTab === 'logs' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>System Logs</button>
+        </div>
       </div>
 
-      {/* Agents Grid */}
-      <div className="p-4 grid grid-cols-1 gap-3 border-b border-slate-100 dark:border-slate-800">
-        {agentList.map((agentType) => {
-          const status = jobStatus.agents[agentType] || AgentStatus.IDLE;
-          const isActive = status === AgentStatus.RUNNING;
-          const isDone = status === AgentStatus.COMPLETED;
-          const isFailed = status === AgentStatus.FAILED;
-          
-          let borderColor = 'border-slate-100 dark:border-slate-800';
-          let bgColor = 'bg-white dark:bg-slate-900';
-          let iconBg = 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500';
-          let textColor = 'text-slate-500 dark:text-slate-400';
-
-          if (isActive) {
-            borderColor = 'border-blue-200 dark:border-blue-900/50';
-            bgColor = 'bg-blue-50 dark:bg-blue-900/10';
-            iconBg = 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
-            textColor = 'text-blue-700 dark:text-blue-300';
-          } else if (isDone) {
-            borderColor = 'border-green-100 dark:border-green-900/50';
-            bgColor = 'bg-green-50 dark:bg-green-900/10';
-            iconBg = 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400';
-            textColor = 'text-green-700 dark:text-green-300';
-          } else if (isFailed) {
-            borderColor = 'border-red-100 dark:border-red-900/50';
-            bgColor = 'bg-red-50 dark:bg-red-900/10';
-            iconBg = 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400';
-            textColor = 'text-red-700 dark:text-red-300';
-          }
-          
-          return (
-            <div key={agentType} className={`flex items-center justify-between p-2 rounded-lg border ${borderColor} ${bgColor}`}>
-              <div className="flex items-center gap-3">
-                <div className={`p-1.5 rounded-md ${iconBg}`}>
-                   <AgentIcon type={agentType} className="w-4 h-4" />
-                </div>
-                <span className={`text-sm font-medium ${textColor}`}>
-                  {agentType}
-                </span>
+      <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
+        {activeTab === 'agents' ? (
+          <div className="space-y-6 pb-20">
+            {sections.map((section, sIdx) => (
+              <div key={sIdx} className="space-y-2">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.1em] text-slate-400 flex items-center gap-2 mb-2">
+                  {section.icon} {section.title}
+                </h4>
+                {section.agents.map(renderAgent)}
               </div>
-              <StatusIcon status={status} />
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Live Logs */}
-      <div className="flex-1 flex flex-col overflow-hidden bg-slate-900 text-slate-300 border-t border-slate-800">
-        <div className="p-2 border-b border-slate-800 text-xs font-mono text-slate-500 uppercase tracking-wider bg-slate-950/50">
-          System Activity Log
-        </div>
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3 font-mono text-xs custom-scrollbar">
-          {jobStatus.logs.length === 0 && (
-             <span className="text-slate-600 italic">Waiting for events...</span>
-          )}
-          {[...jobStatus.logs].reverse().map((log) => (
-            <div key={log.id} className="flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <span className="text-slate-600 whitespace-nowrap">
-                {new Date(log.timestamp).toLocaleTimeString([], { hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit' })}
-              </span>
-              <div>
-                <span className={`font-bold mr-2 ${log.agent === AgentType.MASTER ? 'text-purple-400' : 'text-blue-400'}`}>
-                  [{log.agent}]
-                </span>
-                <span className="text-slate-300">{log.message}</span>
+            ))}
+          </div>
+        ) : (
+          <div ref={scrollRef} className="space-y-2 font-mono text-[9px] pb-20">
+            {jobStatus.logs.map((log) => (
+              <div key={log.id} className="flex gap-2">
+                <span className="text-slate-500">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                <span className="text-indigo-500 font-bold">{log.agent}:</span>
+                <span className="text-slate-700 dark:text-slate-300">{log.message}</span>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

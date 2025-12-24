@@ -15,7 +15,19 @@ export enum AgentType {
   EXIM = 'EXIM Agent',
   WEB = 'Web Agent',
   INTERNAL = 'Internal Agent',
-  REPORT = 'Report Agent'
+  REPORT = 'Report Agent',
+  COUNCIL_HEAD = 'Council Head',
+  COUNCIL_CRITIC = 'Council Critic',
+  COUNCIL_JUDGE = 'Council Judge',
+  PRICING = 'Pricing Agent',
+  FINANCIAL = 'Financial Agent',
+  POLICY = 'Policy Agent',
+  REGULATORY_UPDATES = 'Regulatory Updates Agent',
+  SCIENTIFIC = 'Scientific Agent',
+  BIOLOGY = 'Biology Agent',
+  LITERATURE = 'Literature Agent',
+  EPIDEMIOLOGY = 'Epidemiology Agent',
+  FEASIBILITY = 'Feasibility Agent'
 }
 
 export interface AgentLog {
@@ -33,6 +45,7 @@ export interface JobStatus {
   logs: AgentLog[];
   isComplete: boolean;
   quotaError?: boolean;
+  agentThoughts?: Record<string, string>;
 }
 
 export interface MarketData {
@@ -97,6 +110,18 @@ export interface CompetitorData {
   type: 'Leader' | 'Challenger' | 'Niche' | 'Established';
 }
 
+export interface GoToMarketData {
+  launch_viability_score: number;
+  market_entry_barriers: string[];
+  recommended_strategy: string;
+}
+
+export interface IndicationExpansionData {
+  potential_indications: string[];
+  expansion_feasibility: number;
+  regulatory_pathway: string;
+}
+
 export interface StructuredResult {
   summary: string;
   market: MarketData;
@@ -109,6 +134,19 @@ export interface StructuredResult {
   swot: SwotData;
   competitors: CompetitorData[];
   pdf_url?: string;
+  go_to_market?: GoToMarketData;
+  indication_expansion?: IndicationExpansionData;
+}
+
+export interface InternalFileData {
+  filename: string;
+  content: string;
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp?: string;
 }
 
 export interface QueryPayload {
@@ -117,4 +155,5 @@ export interface QueryPayload {
   molecule?: string;
   generate_pdf: boolean;
   apiKey?: string;
+  fileData?: InternalFileData[];
 }
